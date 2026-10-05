@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Complaint, ComplaintStatus } from '../types';
+import { Complaint } from '../types';
 import { ComplaintCard } from '../components/complaints/ComplaintCard';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
   PlusCircle,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   RefreshCw,
-  AlertTriangle,
   Building,
   Sparkles,
   MapPin,
@@ -27,6 +25,7 @@ export const CitizenPortal: React.FC<Props> = ({
   onSelectComplaint,
 }) => {
   const { user, t } = useAuth();
+
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -36,6 +35,7 @@ export const CitizenPortal: React.FC<Props> = ({
 
   const fetchComplaints = () => {
     setIsLoading(true);
+
     const params: Record<string, any> = {
       search: searchTerm || undefined,
       category_id: selectedCategory || undefined,
@@ -52,8 +52,9 @@ export const CitizenPortal: React.FC<Props> = ({
       params.status = 'closed';
     }
 
-    api.getComplaints(params)
-      .then(res => {
+    api
+      .getComplaints(params)
+      .then((res) => {
         if (res.success && res.data) {
           setComplaints(res.data);
         }
@@ -67,9 +68,14 @@ export const CitizenPortal: React.FC<Props> = ({
   }, [activeTab, selectedCategory]);
 
   useEffect(() => {
-    api.getCategories().then(res => {
-      if (res.success) setCategories(res.categories);
-    }).catch(console.error);
+    api
+      .getCategories()
+      .then((res) => {
+        if (res.success) {
+          setCategories(res.categories);
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -77,10 +83,19 @@ export const CitizenPortal: React.FC<Props> = ({
     fetchComplaints();
   };
 
-  // Quick Counts
   const totalCount = complaints.length;
-  const inProgressCount = complaints.filter(c => c.status === 'in_progress' || c.status === 'assigned').length;
-  const resolvedCount = complaints.filter(c => c.status === 'resolved' || c.status === 'closed').length;
+
+  const inProgressCount = complaints.filter(
+    (c) =>
+      c.status === 'in_progress' ||
+      c.status === 'assigned'
+  ).length;
+
+  const resolvedCount = complaints.filter(
+    (c) =>
+      c.status === 'resolved' ||
+      c.status === 'closed'
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -109,6 +124,7 @@ export const CitizenPortal: React.FC<Props> = ({
               <PlusCircle className="w-4 h-4 text-blue-600" />
               <span>{t('fileNewGrievance')}</span>
             </button>
+
             <div className="text-xs text-blue-200 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>{t('averageSla')}</span>
@@ -122,42 +138,79 @@ export const CitizenPortal: React.FC<Props> = ({
 
       {/* Quick Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {/* Total Grievances */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-xs font-bold">{t('totalGrievances')}</span>
+            <span className="text-xs font-bold">
+              {t('totalGrievances')}
+            </span>
             <Building className="w-4 h-4 text-blue-600" />
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">{totalCount}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{t('loggedInConstituency')}</span>
+
+          <p className="text-2xl font-extrabold text-slate-900">
+            {totalCount}
+          </p>
+
+          <span className="text-[11px] text-slate-500 font-medium">
+            {t('loggedInConstituency')}
+          </span>
         </div>
 
+        {/* In Progress */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-xs font-bold">{t('inProgressMetric')}</span>
+            <span className="text-xs font-bold">
+              {t('inProgressMetric')}
+            </span>
             <RefreshCw className="w-4 h-4 text-amber-600" />
           </div>
-          <p className="text-2xl font-extrabold text-amber-600">{inProgressCount}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{t('underActiveWork')}</span>
+
+          <p className="text-2xl font-extrabold text-amber-600">
+            {inProgressCount}
+          </p>
+
+          <span className="text-[11px] text-slate-500 font-medium">
+            {t('underActiveWork')}
+          </span>
         </div>
 
+        {/* Resolved & Closed */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-xs font-bold">{t('resolvedAndClosed')}</span>
+            <span className="text-xs font-bold">
+              {t('resolvedAndClosed')}
+            </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <p className="text-2xl font-extrabold text-emerald-600">{resolvedCount}</p>
-          <span className="text-[11px] text-slate-500 font-medium">{t('successfullyCompleted')}</span>
+
+          <p className="text-2xl font-extrabold text-emerald-600">
+            {resolvedCount}
+          </p>
+
+          <span className="text-[11px] text-slate-500 font-medium">
+            {t('successfullyCompleted')}
+          </span>
         </div>
 
+        {/* Resolution Rate */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-xs font-bold">{t('resolutionRate')}</span>
+            <span className="text-xs font-bold">
+              {t('resolutionRate')}
+            </span>
             <TrendingUp className="w-4 h-4 text-indigo-600" />
           </div>
+
           <p className="text-2xl font-extrabold text-indigo-600">
-            {totalCount > 0 ? Math.round((resolvedCount / totalCount) * 100) : 0}%
+            {totalCount > 0
+              ? Math.round((resolvedCount / totalCount) * 100)
+              : 0}
+            %
           </p>
-          <span className="text-[11px] text-slate-500 font-medium">{t('constituencyPerformance')}</span>
+
+          <span className="text-[11px] text-slate-500 font-medium">
+            {t('constituencyPerformance')}
+          </span>
         </div>
       </div>
 
@@ -167,12 +220,27 @@ export const CitizenPortal: React.FC<Props> = ({
           {/* Status Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
             {[
-              { id: 'all', label: t('allGrievances') },
-              { id: 'pending', label: t('pendingReview') },
-              { id: 'in_progress', label: t('inProgress') },
-              { id: 'resolved', label: t('resolved') },
-              { id: 'closed', label: t('closed') },
-            ].map(tab => (
+              {
+                id: 'all',
+                label: t('allGrievances'),
+              },
+              {
+                id: 'pending',
+                label: t('pendingReview'),
+              },
+              {
+                id: 'in_progress',
+                label: t('inProgress'),
+              },
+              {
+                id: 'resolved',
+                label: t('resolved'),
+              },
+              {
+                id: 'closed',
+                label: t('closed'),
+              },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -191,25 +259,44 @@ export const CitizenPortal: React.FC<Props> = ({
           <div className="flex items-center gap-2 w-full md:w-auto">
             <select
               value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">{t('allCategories')}</option>
-              {categories.map(c => (
+              <option value="">
+                {t('allCategories')}
+              </option>
+
+              {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.code === 'DRAIN' ? t('categoryDrainage') : c.code === 'ELEC' ? t('categoryElectricity') : c.code === 'SWM' ? t('categoryGarbage') : c.code === 'AMENITIES' ? t('categoryParks') : c.code === 'ROADS' ? t('categoryRoads') : c.code === 'WATER' ? t('categoryWater') : c.name}
+                  {c.code === 'DRAIN'
+                    ? t('categoryDrainage')
+                    : c.code === 'ELEC'
+                    ? t('categoryElectricity')
+                    : c.code === 'SWM'
+                    ? t('categoryGarbage')
+                    : c.code === 'AMENITIES'
+                    ? t('categoryParks')
+                    : c.code === 'ROADS'
+                    ? t('categoryRoads')
+                    : c.code === 'WATER'
+                    ? t('categoryWater')
+                    : c.name}
                 </option>
               ))}
             </select>
 
-            <form onSubmit={handleSearchSubmit} className="relative flex-1 md:w-64">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative flex-1 md:w-64"
+            >
               <input
                 type="text"
                 placeholder={t('complaintSearch')}
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             </form>
           </div>
@@ -224,7 +311,7 @@ export const CitizenPortal: React.FC<Props> = ({
         </div>
       ) : complaints.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {complaints.map(c => (
+          {complaints.map((c) => (
             <ComplaintCard
               key={c.id}
               complaint={c}
@@ -237,10 +324,15 @@ export const CitizenPortal: React.FC<Props> = ({
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900">{t('noGrievances')}</h3>
+
+          <h3 className="text-sm font-bold text-slate-900">
+            {t('noGrievances')}
+          </h3>
+
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
             {t('noGrievancesDescription')}
           </p>
+
           <button
             type="button"
             onClick={onOpenCreateComplaint}
